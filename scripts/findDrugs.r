@@ -5,15 +5,12 @@
 library("igraph")
 library("dplyr")
 
-source("scripts/filterNodes.r")
-source("scripts/filterEdges.r")
 source("scripts/findDistance.r")
 
 # Find all pairs of drugs that may be useful for the given disease
 # You can precompute distance for significant speed up if this function is repeated
 # This also enables the use of other distance measures
 findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
-    dist <- NULL
     if (missing(precompDist)) {
         dist <- getDistFromDisease(graph, chosenDisease, order)
     } else {
@@ -60,10 +57,10 @@ findDrugCombinations <- function(graph, chosenDisease, order, precompDist, preco
     }
 
     dp <- list()
-    dp[[1]] <- lapply(row.names(pairsAMD1[[2]]), function(item) c(item))
+    dp[[1]] <- lapply(row.names(effectiveness), function(item) c(item))
 
-    maxLength <- length(row.names(pairsAMD1[[2]]))
-    items <- row.names(pairsAMD1[[2]])
+    maxLength <- length(row.names(effectiveness))
+    items <- row.names(effectiveness)
     for (size in 2:maxLength) {
         dp[[size]] <- list()
 

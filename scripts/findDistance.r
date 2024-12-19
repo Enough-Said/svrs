@@ -39,24 +39,27 @@ getDistFromDisease <- function(graph, d, order) {
     v <- ego(graph, order = order+2, nodes = d, mode = "all")[[1]]
     drugs <- v[v$type == "drug"]
     drug_names <- names(drugs)
+    cat(paste("Found", length(drug_names), "drugs", "\n"))
 
     diseaseCluster <- neighbors(graph, d, mode = "out")
     drugCluster <- lapply(drugs, function(x) neighbors(graph, x, mode = "out"))
 
-    dist <- data.frame(
-        diseaseDist = unlist(lapply(drug_names,
-            function(x) top.dist(graph, diseaseCluster, drugCluster[[x]])
-        ))
-    )
+    cat("Calculating disease-drug distance\n")
+    diseaseDist <- unlist(pblapply(drug_names,
+        function(x) top.dist(graph, diseaseCluster, drugCluster[[x]])))
 
-    distM <- do.call(rbind, pblapply(seq_along(drug_names), function(i) {
-        mclapply(seq_along(drug_names), function(j) {
-            top.dist(graph, drugCluster[[i]], drugCluster[[j]])
-        })
+    drug_names <- drug_names[diseaseDist < 0]
+    diseaseDist <- diseaseDist[diseaseDist < 0]
+
+    cat("Calculating drug-drug distance\n")
+    distM <- do.call(rbind, pblapply(drug_names, function(i) {
+        mclapply(drug_names, 
+            function(j) top.dist(graph, drugCluster[[i]], drugCluster[[j]])
+        )
     }))
     dimnames(distM) <- list(drug_names, drug_names)
 
-    return(cbind(dist, distM))
+    return(data.frame(cbind(diseaseDist, distM)))
 }
 
 ### Sanity Check

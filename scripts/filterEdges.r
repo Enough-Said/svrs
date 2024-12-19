@@ -47,7 +47,6 @@ e.filter.subcell <- function(graph) {
     subcell.locations <- unique(unlist(subcell$All.location))
     newg <- Reduce(union2, 
         lapply(subcell.locations, function(l) {
-            print(paste("Done", x[1]))
             v.filter.subcell(graph, l)
         }))
     return(newg)
@@ -67,7 +66,6 @@ e.filter.tissue <- function(graph, ntpmCutoff = NULL) {
 
     newg <- Reduce(union2, 
         apply(ntpmCutoff, 1, function(x) {
-            print(paste("Done", x[1]))
             v.filter.tissue(graph, x[1], x[2], x[3])
         }))
 
@@ -88,7 +86,6 @@ e.filter.type <- function(graph, ntpmCutoff = NULL) {
 
     newg <- Reduce(union2, 
         apply(ntpmCutoff, 1, function(x) {
-            print(paste("Done", x[1]))
             v.filter.type(graph, x[1], x[2], x[3])
         }))
 
@@ -109,7 +106,6 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
 
     newg <- Reduce(union2, 
         apply(ntpmCutoff, 1, function(x) {
-            print(paste("Done", x[1]))
             v.filter.line(graph, x[1], x[2], x[3])
         }))
 
