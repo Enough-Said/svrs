@@ -13,6 +13,10 @@ source("scripts/findDistance.r")
 findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
     if (missing(precompDist)) {
         dist <- getDistFromDisease(graph, chosenDisease, order)
+        if (nrow(dist) == 0) {
+            message("No useful drugs found")
+            return()
+        }
     } else {
         dist <- precompDist
     }

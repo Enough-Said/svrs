@@ -6,6 +6,7 @@
 source("scripts/filterNodes.r")
 source("scripts/filterEdges.r")
 source("scripts/findDistance.r")
+source("scripts/findDrugs.r")
 
 tissue <- fromJSON("clean/tissue.json")
 cellLine <- read.delim("clean/cellLine.tsv")
@@ -33,9 +34,9 @@ chosenDisease <- "Alzheimer's Disease"
 g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
 g <- e.filter.type(g)
-newg <- v.filter.tissue(g, "hippocampal formation", minNTPM = 100)
+newg <- v.filter.tissue(g, "hippocampal formation", minNTPM = 1)
 
-drugPairs <- findDrugPairs(g, chosenDisease, 0)
-drugCombs <- findDrugCombinations(g, chosenDisease, 0, precompPairs = drugPairs)
+drugPairs <- findDrugPairs(newg, chosenDisease, 0)
+drugCombs <- findDrugCombinations(newg, chosenDisease, 0, precompPairs = drugPairs)
 
-print(drugCombs[[1]][[2]])
+print(drugCombs)

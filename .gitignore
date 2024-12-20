@@ -1,2 +1,4 @@
 rawdata
 rawdata/*
+clean/cellLine.tsv
+clean/cellType.json

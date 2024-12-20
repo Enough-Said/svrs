@@ -51,6 +51,11 @@ getDistFromDisease <- function(graph, d, order) {
     drug_names <- drug_names[diseaseDist < 0]
     diseaseDist <- diseaseDist[diseaseDist < 0]
 
+    cat(paste("Found", length(drug_names), "useful drugs\n"))
+    if (length(drug_names) == 0) {
+        return(data.frame())
+    }
+
     cat("Calculating drug-drug distance\n")
     distM <- do.call(rbind, pblapply(drug_names, function(i) {
         mclapply(drug_names, 
