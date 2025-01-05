@@ -3,15 +3,15 @@
 # drug combinations
 #
 
-source("scripts/filterNodes.r")
-source("scripts/filterEdges.r")
-source("scripts/findDistance.r")
-source("scripts/findDrugs.r")
+source("analysisScripts/filterNodes.r")
+source("analysisScripts/filterEdges.r")
+source("analysisScripts/findDistance.r")
+source("analysisScripts/findDrugs.r")
 
-tissue <- fromJSON("clean/tissue.json")
-cellLine <- read.delim("clean/cellLine.tsv")
-cellType <- fromJSON("clean/cellType.json")
-subcell <- fromJSON("clean/subcell.json")
+# tissue <- fromJSON("clean/tissue.json")
+# cellLine <- read.delim("clean/cellLine.tsv")
+# cellType <- fromJSON("clean/cellType.json")
+# subcell <- fromJSON("clean/subcell.json")
 
 ################################################################################
 

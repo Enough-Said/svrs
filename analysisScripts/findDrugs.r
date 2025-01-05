@@ -5,7 +5,7 @@
 library("igraph")
 library("dplyr")
 
-source("scripts/findDistance.r")
+source("analysisScripts/findDistance.r")
 
 # Find all pairs of drugs that may be useful for the given disease
 # You can precompute distance for significant speed up if this function is repeated

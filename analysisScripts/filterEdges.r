@@ -3,7 +3,7 @@
 #
 
 # We use variables and functions defined in this script
-source("scripts/filterNodes.r")
+source("analysisScripts/filterNodes.r")
 library("dplyr")
 
 ### Credit to Jonno Bourne for union function

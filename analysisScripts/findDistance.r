@@ -9,7 +9,8 @@ library("parallel")
 
 # Find the average shortest distances between two sets of nodes
 # Implements formula: s_AB = d_AB - (d_AA + d_BB)/2
-# Where d_XY is the sum of shortest distances from nodes in X to any node in Y and nodes in Y to any node in X, divided by the total number of nodes
+# Where d_XY is the sum of shortest distances from nodes in X to any node in Y 
+# and nodes in Y to any node in X, divided by the total number of nodes
 top.dist <- function(graph, nodeset1, nodeset2) {
     changeInfTo <- length(V(graph)) # May change if better method found
     
