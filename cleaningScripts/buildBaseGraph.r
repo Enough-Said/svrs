@@ -31,7 +31,7 @@ g <- addAdjList(g, disease, 1, 2, "disease")
 
 ################################################################################
 # Sanity Check by plotting things
-type_colors <- c("human-protein" = "blue", 
+type_colors <- c("human-protein" = "lightblue", 
     "drug" = "green", 
     "disease" = "red")
 

@@ -20,13 +20,13 @@ top.dist <- function(graph, nodeset1, nodeset2) {
     d_AB <- d_AB / (nrow(d) + ncol(d))
 
     d <- distances(graph, v = nodeset1, to = nodeset1, mode = "out")
-    diag(d) <- max(d) # Remove the zeroes in diagonal
+    diag(d) <- Inf # Remove the zeroes in diagonal
     d[d == Inf] <- changeInfTo
     d_AA <- sum(apply(d, 1, min))
     d_AA <- d_AA / nrow(d)
 
     d <- distances(graph, v = nodeset2, to = nodeset2, mode = "out")
-    diag(d) <- max(d)
+    diag(d) <- Inf
     d[d == Inf] <- changeInfTo
     d_BB <- sum(apply(d, 1, min))
     d_BB <- d_BB / nrow(d)
@@ -69,4 +69,5 @@ getDistFromDisease <- function(graph, d, order) {
 }
 
 ### Sanity Check
+# g <- readRDS("clean/baseGraph.rds")
 # getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0)

@@ -25,7 +25,7 @@ findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
     effectiveness <- dist[dist$diseaseDist < 0, "diseaseDist", drop = FALSE]
     drugSep <- dist[drugNames, drugNames, drop = FALSE]
 
-    separated <- which(drugSep > 0, arr.ind = TRUE)
+    separated <- which(drugSep >= 0, arr.ind = TRUE)
     drugPairs <- data.frame(
         Drug1 = rownames(drugSep)[pmin(separated[, 1], separated[, 2])],
         Drug2 = colnames(drugSep)[pmax(separated[, 1], separated[, 2])],
