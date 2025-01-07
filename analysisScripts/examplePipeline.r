@@ -21,11 +21,13 @@ g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
 g <- e.filter.tissue(g)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 0)
-drugPairs <- findDrugPairs(g, chosenDisease, 0, drugDist)
-drugCombs <- findDrugCombinations(g, chosenDisease, 0, precompPairs = drugPairs)
+drugDist <- getDistFromDisease(g, chosenDisease, 1)
+drugPairs <- findDrugPairs(g, chosenDisease, 1, drugDist)
+drugCombs <- findDrugCombinations(g, 
+    chosenDisease, 1, precompPairs = drugPairs, 
+    maxSize = 2)
 
-print(drugCombs)
+print(drugCombs[[1]][[2]])
 
 ################################################################################
 

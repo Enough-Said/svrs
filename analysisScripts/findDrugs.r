@@ -37,7 +37,7 @@ findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
 
 # Find all combinations of drugs that can be useful in the chosen disease
 # Can give a precomputed distance or precomputed drug pairs list
-findDrugCombinations <- function(graph, chosenDisease, order, precompDist, precompPairs) {
+findDrugCombinations <- function(graph, chosenDisease, order, precompDist, precompPairs, maxSize = -1) {
     dist <- NULL
     drugPairs <- NULL
 
@@ -63,9 +63,9 @@ findDrugCombinations <- function(graph, chosenDisease, order, precompDist, preco
     dp <- list()
     dp[[1]] <- lapply(row.names(effectiveness), function(item) c(item))
 
-    maxLength <- length(row.names(effectiveness))
+    maxSize <- ifelse(maxSize == -1, length(row.names(effectiveness)), maxSize)
     items <- row.names(effectiveness)
-    for (size in 2:maxLength) {
+    for (size in 2:maxSize) {
         dp[[size]] <- list()
 
         for (comb in dp[[size - 1]]) {
