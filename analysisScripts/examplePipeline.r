@@ -1,5 +1,5 @@
 #
-# A pipeline displaying all the scripts and functions together to find
+# A pipeline displaying how to use all the scripts and functions together to find
 # drug combinations
 #
 
@@ -7,11 +7,6 @@ source("analysisScripts/filterNodes.r")
 source("analysisScripts/filterEdges.r")
 source("analysisScripts/findDistance.r")
 source("analysisScripts/findDrugs.r")
-
-# tissue <- fromJSON("clean/tissue.json")
-# cellLine <- read.delim("clean/cellLine.tsv")
-# cellType <- fromJSON("clean/cellType.json")
-# subcell <- fromJSON("clean/subcell.json")
 
 ################################################################################
 
@@ -21,13 +16,11 @@ g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
 g <- e.filter.tissue(g)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 1)
-drugPairs <- findDrugPairs(g, chosenDisease, 1, drugDist)
-drugCombs <- findDrugCombinations(g, 
-    chosenDisease, 1, precompPairs = drugPairs, 
-    maxSize = 2)
+drugDist <- getDistFromDisease(g, chosenDisease, 0, 1)
+drugPairs <- findDrugPairs(g, drugDist)
+drugCombs <- findDrugCombinations(g, drugPairs, maxSize = 2)
 
-print(drugCombs[[1]][[2]])
+print(drugCombs[[2]])
 
 ################################################################################
 
@@ -38,7 +31,10 @@ g <- e.filter.subcell(g)
 g <- e.filter.type(g)
 newg <- v.filter.tissue(g, "hippocampal formation", minNTPM = 1)
 
-drugPairs <- findDrugPairs(newg, chosenDisease, 0)
-drugCombs <- findDrugCombinations(newg, chosenDisease, 0, precompPairs = drugPairs)
+drugDist <- getDistFromDisease(g, chosenDisease, 1, 1)
+drugPairs <- findDrugPairs(g, drugDist)
+drugCombs <- findDrugCombinations(g, drugPairs, maxSize = 3)
 
-print(drugCombs)
+print(drugCombs[[1]])
+
+################################################################################

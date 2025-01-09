@@ -8,21 +8,9 @@ library("dplyr")
 source("analysisScripts/findDistance.r")
 
 # Find all pairs of drugs that may be useful for the given disease
-# You can precompute distance for significant speed up if this function is repeated
-# This also enables the use of other distance measures
-findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
-    if (missing(precompDist)) {
-        dist <- getDistFromDisease(graph, chosenDisease, order)
-        if (nrow(dist) == 0) {
-            message("No useful drugs found")
-            return()
-        }
-    } else {
-        dist <- precompDist
-    }
-
+# Must provide a graph and all distances for each drug from the disease and from each other
+findDrugPairs <- function(graph, dist) {
     drugNames <- row.names(dist[dist$diseaseDist < 0, ])
-    effectiveness <- dist[dist$diseaseDist < 0, "diseaseDist", drop = FALSE]
     drugSep <- dist[drugNames, drugNames, drop = FALSE]
 
     separated <- which(drugSep >= 0, arr.ind = TRUE)
@@ -32,28 +20,14 @@ findDrugPairs <- function(graph, chosenDisease, order, precompDist) {
         s_AB = unlist(drugSep[separated])
     ) %>% distinct(Drug1, Drug2, .keep_all = TRUE)
 
-    return(list(drugPairs, effectiveness))
+    return(drugPairs)
 }
 
 # Find all combinations of drugs that can be useful in the chosen disease
 # Can give a precomputed distance or precomputed drug pairs list
-findDrugCombinations <- function(graph, chosenDisease, order, precompDist, precompPairs, maxSize = -1) {
-    dist <- NULL
-    drugPairs <- NULL
-
-    if (missing(precompPairs)) {
-        if (missing(precompDist)) {
-            drugPairs <- findDrugPairs(graph, chosenDisease, order)
-        } else {
-            dist <- precompDist
-            drugPairs <- findDrugPairs(graph, chosenDisease, order, dist)
-        }
-    } else {
-        drugPairs <- precompPairs
-    }
-
-    effectiveness <- drugPairs[[2]]
-    drugPairs <- apply(drugPairs[[1]][, 1:2], 1, function(x) list(x[[1]], x[[2]]))
+findDrugCombinations <- function(graph, drugPairs, maxSize = -1) {
+    items <- unique(c(drugPairs[["Drug1"]], drugPairs[["Drug2"]]))
+    drugPairs <- apply(drugPairs[, 1:2], 1, function(x) list(x[[1]], x[[2]]))
     pairSet <- unique(unlist(lapply(drugPairs, paste, collapse = "_")))
     isValidPair <- function(x, y) {
         paste(c(x, y), collapse = "_") %in% pairSet ||
@@ -61,10 +35,9 @@ findDrugCombinations <- function(graph, chosenDisease, order, precompDist, preco
     }
 
     dp <- list()
-    dp[[1]] <- lapply(row.names(effectiveness), function(item) c(item))
+    dp[[1]] <- lapply(items, function(item) c(item))
 
-    maxSize <- ifelse(maxSize == -1, length(row.names(effectiveness)), maxSize)
-    items <- row.names(effectiveness)
+    maxSize <- ifelse(maxSize == -1, length(items), maxSize)
     for (size in 2:maxSize) {
         dp[[size]] <- list()
 
@@ -84,12 +57,12 @@ findDrugCombinations <- function(graph, chosenDisease, order, precompDist, preco
         }
     }
 
-    return(list(dp, effectiveness))
+    return(dp)
 }
 
 ### Sanity Check
-# dist <- getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 1)
-# pairsAMD1 <- findDrugPairs(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 1, dist)
-# combs <- findDrugCombinations(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 1, precompPairs = pairsAMD1)
+# dist <- getDistFromDisease(g, "ALZHEIMER DISEASE 2", 0, 1)
+# pairsAD2 <- findDrugPairs(g, dist)
+# combs <- findDrugCombinations(g, pairsAD2)
 
 # print(combs)

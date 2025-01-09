@@ -11,7 +11,7 @@ library("parallel")
 # Implements formula: s_AB = d_AB - (d_AA + d_BB)/2
 # Where d_XY is the sum of shortest distances from nodes in X to any node in Y 
 # and nodes in Y to any node in X, divided by the total number of nodes
-top.dist <- function(graph, nodeset1, nodeset2) {
+topDist <- function(graph, nodeset1, nodeset2) {
     changeInfTo <- length(V(graph)) # May change if better method found
     
     d <- distances(graph, v = nodeset1, to = nodeset2, mode = "out")
@@ -34,10 +34,13 @@ top.dist <- function(graph, nodeset1, nodeset2) {
     return(d_AB - (d_AA + d_BB)/2)
 }
 
-# Given a graph and disease name, returns topological distance values
-# `order` is the maximum amount of nodes that can appear between disease and drug proteins
-getDistFromDisease <- function(graph, d, order) {
-    v <- ego(graph, order = order+2, nodes = d, mode = "all")[[1]]
+# Given a graph and disease name, finds nearby drugs and returns their topological distance values
+# `minSep` and `maxSep` are the minimum and maximum separation, 
+# representing the number of nodes that can appear between the disease and drugs
+getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0) {
+    v <- ego(graph, order = maxSep+2, nodes = d, mode = "all")[[1]]
+    v <- v %m% ego(graph, order = minSep+1, nodes = d, mode = "all")[[1]]
+
     drugs <- v[v$type == "drug"]
     drug_names <- names(drugs)
     cat(paste("Found", length(drug_names), "drugs", "\n"))
@@ -47,7 +50,7 @@ getDistFromDisease <- function(graph, d, order) {
 
     cat("Calculating disease-drug distance\n")
     diseaseDist <- unlist(pblapply(drug_names,
-        function(x) top.dist(graph, diseaseCluster, drugCluster[[x]])))
+        function(x) topDist(graph, diseaseCluster, drugCluster[[x]])))
 
     drug_names <- drug_names[diseaseDist < 0]
     diseaseDist <- diseaseDist[diseaseDist < 0]
@@ -60,7 +63,7 @@ getDistFromDisease <- function(graph, d, order) {
     cat("Calculating drug-drug distance\n")
     distM <- do.call(rbind, pblapply(drug_names, function(i) {
         mclapply(drug_names, 
-            function(j) top.dist(graph, drugCluster[[i]], drugCluster[[j]])
+            function(j) topDist(graph, drugCluster[[i]], drugCluster[[j]])
         )
     }))
     dimnames(distM) <- list(drug_names, drug_names)
@@ -70,4 +73,4 @@ getDistFromDisease <- function(graph, d, order) {
 
 ### Sanity Check
 # g <- readRDS("clean/baseGraph.rds")
-# getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0)
+# getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0)
