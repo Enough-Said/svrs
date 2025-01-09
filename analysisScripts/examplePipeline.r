@@ -16,11 +16,11 @@ g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
 g <- e.filter.tissue(g)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 0, 1)
-drugPairs <- findDrugPairs(g, drugDist)
-drugCombs <- findDrugCombinations(g, drugPairs, maxSize = 2)
+drugDist <- getDistFromDisease(g, chosenDisease, 0, 1, overlapDist)
+drugPairs <- findDrugPairs(g, drugDist, minSep = 10000)
+drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
 
-print(drugCombs[[2]])
+print(drugCombs)
 
 ################################################################################
 
@@ -31,10 +31,30 @@ g <- e.filter.subcell(g)
 g <- e.filter.type(g)
 newg <- v.filter.tissue(g, "hippocampal formation", minNTPM = 1)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 1, 1)
+drugDist <- getDistFromDisease(g, chosenDisease, 1, 1, overlapDist)
 drugPairs <- findDrugPairs(g, drugDist)
-drugCombs <- findDrugCombinations(g, drugPairs, maxSize = 3)
+drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
 
 print(drugCombs[[1]])
 
 ################################################################################
+
+# Metformin in combination with temozolomide showed promising synergistic efficacy for treatment of glioblastoma
+chosenDisease <- "Glioblastoma"
+
+g <- readRDS("clean/baseGraph.rds")
+g <- e.filter.subcell(g)
+
+tissue <- fromJSON("clean/tissue.json")
+tCutoff <- data.frame(
+    tissue = unique(tissue$Tissue),
+    min = rep(10, times = length(unique(tissue$Tissue))),
+    max = rep(1000000, times = length(unique(tissue$Tissue)))
+)
+g <- e.filter.tissue(g, ntpmCutoff = tCutoff)
+
+drugDist <- getDistFromDisease(g, chosenDisease, 1, 1)
+drugPairs <- findDrugPairs(g, drugDist)
+drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 2)
+
+print(drugCombs)

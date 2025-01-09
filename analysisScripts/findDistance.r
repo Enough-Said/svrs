@@ -34,10 +34,20 @@ topDist <- function(graph, nodeset1, nodeset2) {
     return(d_AB - (d_AA + d_BB)/2)
 }
 
+# Alternative distance function given by `shortest separation - overlap`
+overlapDist <- function(graph, nodeset1, nodeset2) {
+    changeInfTo <- length(V(graph))
+
+    d <- min(distances(graph, v = nodeset1, to = nodeset2, mode = "out"))
+    ans <- ifelse(d == Inf, changeInfTo, d - sum(nodeset1 %in% nodeset2))
+    return(ans)
+}
+
+
 # Given a graph and disease name, finds nearby drugs and returns their topological distance values
 # `minSep` and `maxSep` are the minimum and maximum separation, 
 # representing the number of nodes that can appear between the disease and drugs
-getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0) {
+getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist) {
     v <- ego(graph, order = maxSep+2, nodes = d, mode = "all")[[1]]
     v <- v %m% ego(graph, order = minSep+1, nodes = d, mode = "all")[[1]]
 
@@ -50,10 +60,11 @@ getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0) {
 
     cat("Calculating disease-drug distance\n")
     diseaseDist <- unlist(pblapply(drug_names,
-        function(x) topDist(graph, diseaseCluster, drugCluster[[x]])))
+        function(x) distFun(graph, diseaseCluster, drugCluster[[x]])))
 
-    drug_names <- drug_names[diseaseDist < 0]
-    diseaseDist <- diseaseDist[diseaseDist < 0]
+    diseaseDist <- diseaseDist - maxSep
+    drug_names <- drug_names[diseaseDist <= 0]
+    diseaseDist <- diseaseDist[diseaseDist <= 0]
 
     cat(paste("Found", length(drug_names), "useful drugs\n"))
     if (length(drug_names) == 0) {
@@ -63,7 +74,7 @@ getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0) {
     cat("Calculating drug-drug distance\n")
     distM <- do.call(rbind, pblapply(drug_names, function(i) {
         mclapply(drug_names, 
-            function(j) topDist(graph, drugCluster[[i]], drugCluster[[j]])
+            function(j) distFun(graph, drugCluster[[i]], drugCluster[[j]])
         )
     }))
     dimnames(distM) <- list(drug_names, drug_names)
@@ -72,5 +83,6 @@ getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0) {
 }
 
 ### Sanity Check
-# g <- readRDS("clean/baseGraph.rds")
-# getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0)
+g <- readRDS("clean/baseGraph.rds")
+getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0)
+getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0, overlapDist)
