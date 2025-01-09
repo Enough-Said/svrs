@@ -94,7 +94,7 @@ v.filter.subcell <- function(graph, l) {
 
 
 
-# # Sanity Checks
+### Sanity Checks
 # sg <- v.filter.tissue(g, "stomach", 0, 50)
 # head(V(sg))
 # 

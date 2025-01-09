@@ -47,7 +47,9 @@ overlapDist <- function(graph, nodeset1, nodeset2) {
 # Given a graph and disease name, finds nearby drugs and returns their topological distance values
 # `minSep` and `maxSep` are the minimum and maximum separation, 
 # representing the number of nodes that can appear between the disease and drugs
-getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist) {
+# `diseaseDistShift` is the amount to subtract from drug-disease distances. 
+# This would allow further drugs to be included, which can be finetuned to include drugs that affect proteins in the neighbourhood of the disease.
+findDrugDist <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist, diseaseDistShift = maxSep) {
     v <- ego(graph, order = maxSep+2, nodes = d, mode = "all")[[1]]
     v <- v %m% ego(graph, order = minSep+1, nodes = d, mode = "all")[[1]]
 
@@ -62,7 +64,7 @@ getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDi
     diseaseDist <- unlist(pblapply(drug_names,
         function(x) distFun(graph, diseaseCluster, drugCluster[[x]])))
 
-    diseaseDist <- diseaseDist - maxSep
+    diseaseDist <- diseaseDist - diseaseDistShift
     drug_names <- drug_names[diseaseDist <= 0]
     diseaseDist <- diseaseDist[diseaseDist <= 0]
 
@@ -82,7 +84,32 @@ getDistFromDisease <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDi
     return(data.frame(cbind(diseaseDist, distM)))
 }
 
+# Given a graph, disease, and drug combination list provides distances based on 
+# the distance function `distFun` provided 
+checkDrugComb <- function(graph, disease, drugComb, distFun = topDist) {
+    drugComb <- unlist(drugComb)
+
+    diseaseCluster <- neighbors(graph, disease, mode = "out")
+    drugCluster <- lapply(V(graph)[drugComb], function(x) neighbors(graph, x, mode = "out"))
+
+    cat("Calculating disease-drug distance\n")
+    diseaseDist <- unlist(pblapply(drugComb,
+        function(x) distFun(graph, diseaseCluster, drugCluster[[x]])))
+
+    cat("Calculating drug-drug distance\n")
+    distM <- do.call(rbind, pblapply(drugComb, function(i) {
+        mclapply(drugComb, 
+            function(j) distFun(graph, drugCluster[[i]], drugCluster[[j]])
+        )
+    }))
+    dimnames(distM) <- list(drugComb, drugComb)
+
+    return(data.frame(cbind(diseaseDist, distM)))
+}
+
 ### Sanity Check
-g <- readRDS("clean/baseGraph.rds")
-getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0)
-getDistFromDisease(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0, overlapDist)
+# g <- readRDS("clean/baseGraph.rds")
+# findDrugDist(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0)
+# findDrugDist(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0, overlapDist)
+
+# checkDrugComb(g, chosenDisease, drugCombs[[2]][[2]])

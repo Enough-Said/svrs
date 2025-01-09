@@ -27,8 +27,12 @@ getNearbyNodes <- function(graph, order, node) {
     return(names(unlist(ego(graph, order = order, nodes = node, mode = "out"))))
 }
 
-plotCombination(g, chosenDisease, unlist(drugCombs[[1]][[2]][[2]]),
-    c(
-        getNearbyNodes(g, 1, "CHEMBL463981")
-    )
-)
+
+### Sanity Check
+# chosenDisease <- "ALZHEIMER DISEASE 2"
+# plotCombination(g, chosenDisease, unlist(drugCombs[[2]][[2]]),
+#     c(
+#         getNearbyNodes(g, 1, "CHEMBL463981"),
+#         getNearbyNodes(g, 1, "CHEMBL3545261")
+#     )
+# )

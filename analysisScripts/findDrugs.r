@@ -9,17 +9,17 @@ source("analysisScripts/findDistance.r")
 
 # Find all pairs of drugs that may be useful for the given disease
 # Must provide a graph and all distances for each drug from the disease and from each other
-# `minSep` is an optional parameter, and only drug pairs with separation strictly greater than
+# `minDist` is an optional parameter, and only drug pairs with distance strictly greater than
 # it will be included
-findDrugPairs <- function(graph, dist, minSep = 0) {
+findDrugPairs <- function(graph, dist, minDist = 0) {
     drugNames <- row.names(dist[dist$diseaseDist <= 0, ])
-    drugSep <- dist[drugNames, drugNames, drop = FALSE]
+    drugDist <- dist[drugNames, drugNames, drop = FALSE]
 
-    separated <- which(drugSep > minSep, arr.ind = TRUE)
+    separated <- which(drugDist > minDist, arr.ind = TRUE)
     drugPairs <- data.frame(
-        Drug1 = rownames(drugSep)[pmin(separated[, 1], separated[, 2])],
-        Drug2 = colnames(drugSep)[pmax(separated[, 1], separated[, 2])],
-        dist = unlist(drugSep[separated])
+        Drug1 = rownames(drugDist)[pmin(separated[, 1], separated[, 2])],
+        Drug2 = colnames(drugDist)[pmax(separated[, 1], separated[, 2])],
+        dist = unlist(drugDist[separated])
     ) %>% distinct(Drug1, Drug2, .keep_all = TRUE)
 
     return(drugPairs)
@@ -42,6 +42,7 @@ findDrugCombinations <- function(graph, drugDist, drugPairs, maxSize = -1) {
 
     maxSize <- ifelse(maxSize == -1, length(items), maxSize)
     for (size in 2:maxSize) {
+        print(paste0("Computing combinations of size ", size, " out of ", maxSize))
         dp[[size]] <- list()
 
         for (comb in dp[[size - 1]]) {
@@ -64,7 +65,7 @@ findDrugCombinations <- function(graph, drugDist, drugPairs, maxSize = -1) {
 }
 
 ### Sanity Check
-# dist <- getDistFromDisease(g, "ALZHEIMER DISEASE 2", 0, 1)
+# dist <- findDrugDist(g, "ALZHEIMER DISEASE 2", 0, 1)
 # pairsAD2 <- findDrugPairs(g, dist)
 # combs <- findDrugCombinations(g, dist, pairsAD2)
 

@@ -16,8 +16,8 @@ g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
 g <- e.filter.tissue(g)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 0, 1, overlapDist)
-drugPairs <- findDrugPairs(g, drugDist, minSep = 10000)
+drugDist <- findDrugDist(g, chosenDisease, 0, 0)
+drugPairs <- findDrugPairs(g, drugDist)
 drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
 
 print(drugCombs)
@@ -31,7 +31,7 @@ g <- e.filter.subcell(g)
 g <- e.filter.type(g)
 newg <- v.filter.tissue(g, "hippocampal formation", minNTPM = 1)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 1, 1, overlapDist)
+drugDist <- findDrugDist(g, chosenDisease, 1, 1, overlapDist)
 drugPairs <- findDrugPairs(g, drugDist)
 drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
 
@@ -53,7 +53,7 @@ tCutoff <- data.frame(
 )
 g <- e.filter.tissue(g, ntpmCutoff = tCutoff)
 
-drugDist <- getDistFromDisease(g, chosenDisease, 1, 1)
+drugDist <- findDrugDist(g, chosenDisease, 1, 1)
 drugPairs <- findDrugPairs(g, drugDist)
 drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 2)
 
