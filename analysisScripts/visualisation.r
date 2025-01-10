@@ -2,24 +2,34 @@
 # Create a visualisation of the subgraph formed by the disease and srug combination
 #
 
+set.seed(123)
 library("igraph")
 
-plotCombination <- function(graph, disease, drugs, additionalNodes = NULL) {
+plotCombination <- function(graph, disease, drugs, additionalNodes = NULL, diseaseOrder = 1, otherOrder = 1) {
     type_colors <- c("human-protein" = "lightblue", 
         "drug" = "green", 
         "disease" = "red")
     
-    subgraph <- induced_subgraph(graph, unlist(ego(
+    diseaseNodes <- unlist(ego(
         graph, 
-        order = 1, 
-        nodes = c(disease, drugs, additionalNodes),
+        order = diseaseOrder, 
+        nodes = disease,
         mode = "out"
-    )))
+    ))
+
+    otherNodes <- unlist(ego(
+        graph, 
+        order = otherOrder, 
+        nodes = c(drugs, additionalNodes),
+        mode = "out"
+    ))
+
+    subgraph <- induced_subgraph(graph, c(diseaseNodes, otherNodes))
 
     plot(
-        subgraph,
+        as_undirected(subgraph),
         vertex.color = type_colors[V(subgraph)$type],
-        main = "Subgraph with Vertices Colored by 'Type'"
+        main = paste("Subgraph of", disease, " and Given Drugs")
     )
 }
 

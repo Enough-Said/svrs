@@ -39,22 +39,18 @@ print(drugCombs[[1]])
 
 ################################################################################
 
-# Metformin in combination with temozolomide showed promising synergistic efficacy for treatment of glioblastoma
-chosenDisease <- "Glioblastoma"
-
+# Verifying a known drug combination
 g <- readRDS("clean/baseGraph.rds")
 g <- e.filter.subcell(g)
+g <- e.filter.tissue(g)
 
-tissue <- fromJSON("clean/tissue.json")
-tCutoff <- data.frame(
-    tissue = unique(tissue$Tissue),
-    min = rep(10, times = length(unique(tissue$Tissue))),
-    max = rep(1000000, times = length(unique(tissue$Tissue)))
-)
-g <- e.filter.tissue(g, ntpmCutoff = tCutoff)
+chosenDisease <- "Non-small cell lung cancer stage I"
+combo <- c("CHEMBL217092", "CHEMBL601719")
 
-drugDist <- findDrugDist(g, chosenDisease, 1, 1)
-drugPairs <- findDrugPairs(g, drugDist)
-drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 2)
+# Check the graph has all drugs
+V(g)[combo]
 
-print(drugCombs)
+checkDrugComb(g, chosenDisease, combo)
+checkDrugComb(g, chosenDisease, combo, overlapDist)
+plotCombination(g, chosenDisease, combo, otherOrder = 3, diseaseOrder = 0)
+
