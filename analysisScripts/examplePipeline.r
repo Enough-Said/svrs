@@ -54,3 +54,9 @@ checkDrugComb(g, chosenDisease, combo)
 checkDrugComb(g, chosenDisease, combo, overlapDist)
 plotCombination(g, chosenDisease, combo, otherOrder = 3, diseaseOrder = 0)
 
+
+
+# chosenDisease <- "Acute Myeloid Leukemia, M1"
+# checkDrugComb(g, chosenDisease, c("CHEMBL3039522", "CHEMBL197672"), overlapDist)
+# checkDrugComb(g, chosenDisease, c("CHEMBL3039522", "CHEMBL197672"))
+
