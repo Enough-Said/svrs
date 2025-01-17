@@ -7,6 +7,12 @@ library("dplyr")
 library("pbapply")
 library("parallel")
 
+library("GOSemSim")
+library("org.Hs.eg.db")
+goDataCC <- godata(annoDb = "org.Hs.eg.db", ont="CC", computeIC=FALSE)
+goDataMF <- godata(annoDb = "org.Hs.eg.db", ont="MF", computeIC=FALSE)
+goDataBP <- godata(annoDb = "org.Hs.eg.db", ont="BP", computeIC=FALSE)
+
 # Find the average shortest distances between two sets of nodes
 # Implements formula: s_AB = d_AB - (d_AA + d_BB)/2
 # Where d_XY is the sum of shortest distances from nodes in X to any node in Y 
@@ -43,6 +49,53 @@ overlapDist <- function(graph, nodeset1, nodeset2) {
     return(ans)
 }
 
+# Function to find functional proximity between two sets of nodes
+# Ensure go data is preprocessed for function to work (should occur when you run this script)
+# `out` can be "all", "max", "min", or "mean"; `out` is ignored if `type` is "all"
+# `type` can be "CC" (Cellular Component), "MF" (Molecular Function), "BP" (Biological Process), or "all"
+funcDist <- function(graph, nodeset1, nodeset2, out = "min", type = "BP") {
+    if (!(out %in% c("all", "max", "min", "mean"))) {
+        print(paste("Invalid value for out: ", out))
+        return()
+    }
+
+    set1 <- select(org.Hs.eg.db,
+        keys = names(nodeset1),
+        columns = "ENTREZID",
+        keytype = "SYMBOL")[, "ENTREZID"] %>% suppressMessages()
+    set2 <- select(org.Hs.eg.db,
+        keys = names(nodeset2),
+        columns = "ENTREZID",
+        keytype = "SYMBOL")[, "ENTREZID"] %>% suppressMessages()
+
+    if (type == "all") {
+        simCC <- 1 - mgeneSim(c(set1, set2), goDataCC, verbose = FALSE)[set1, set2]
+        simMF <- 1 - mgeneSim(c(set1, set2), goDataMF, verbose = FALSE)[set1, set2]
+        simBP <- 1 - mgeneSim(c(set1, set2), goDataBP, verbose = FALSE)[set1, set2]
+    } else if (type == "CC") {
+        simCC <- 1 - mgeneSim(c(set1, set2), goDataCC, verbose = FALSE)[set1, set2]
+        return(mean(simCC))
+    } else if (type == "MF") {
+        simMF <- 1 - mgeneSim(c(set1, set2), goDataMF, verbose = FALSE)[set1, set2]
+        return(mean(simMF))
+    } else if (type == "BP") {
+        simBP <- 1 - mgeneSim(c(set1, set2), goDataBP, verbose = FALSE)[set1, set2]
+        return(mean(simBP))
+    }
+
+    res <- c(mean(simCC), mean(simMF), mean(simBP))
+    if (out == "all") {
+        return(res)
+    } else if (out == "mean") {
+        return(mean(res))
+    } else if (out == "max") {
+        return(max(res))
+    } else if (out == "min") {
+        return(min(res))
+    }
+}
+
+################################################################################
 
 # Given a graph and disease name, finds nearby drugs and returns their topological distance values
 # `minSep` and `maxSep` are the minimum and maximum separation, 
@@ -66,12 +119,13 @@ findDrugDist <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist, di
 
     diseaseDist <- diseaseDist - diseaseDistShift
     drug_names <- drug_names[diseaseDist <= 0]
-    diseaseDist <- diseaseDist[diseaseDist <= 0]
 
     cat(paste("Found", length(drug_names), "useful drugs\n"))
     if (length(drug_names) == 0) {
-        return(data.frame())
+        return(diseaseDist)
     }
+
+    diseaseDist <- diseaseDist[diseaseDist <= 0]
 
     cat("Calculating drug-drug distance\n")
     distM <- do.call(rbind, pblapply(drug_names, function(i) {
@@ -85,7 +139,7 @@ findDrugDist <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist, di
 }
 
 # Given a graph, disease, and drug combination list provides distances based on 
-# the distance function `distFun` provided 
+# the distance function `distFun` 
 checkDrugComb <- function(graph, disease, drugComb, distFun = topDist) {
     drugComb <- unlist(drugComb)
 
@@ -113,3 +167,12 @@ checkDrugComb <- function(graph, disease, drugComb, distFun = topDist) {
 # findDrugDist(g, "ACROMESOMELIC DYSPLASIA, MAROTEAUX TYPE", 0, 0, overlapDist)
 
 # checkDrugComb(g, chosenDisease, drugCombs[[2]][[2]])
+
+# s1 <- neighbors(g, "CHEMBL1089636", mode = "out")
+# s2 <- neighbors(g, "CHEMBL1364551", mode = "out")
+# funcDist(g, s1, s2, out = "all", type = "all")
+# funcDist(g, s1, s2)
+
+
+# findDrugDist(g, "ALZHEIMER DISEASE 2", 0, 0, funcDist, diseaseDistShift = 0.6)
+# checkDrugComb(g, chosenDisease, drugCombs[[2]][[1]], funcDist)
