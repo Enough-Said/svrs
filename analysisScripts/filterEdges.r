@@ -5,6 +5,7 @@
 # We use variables and functions defined in this script
 source("analysisScripts/filterNodes.r")
 library("dplyr")
+library("igraph")
 
 ### Credit to Jonno Bourne for union function
 # The union of two or more graphs are created. 
@@ -40,6 +41,7 @@ union2 <- function(g1, g2) {
     return(g)
 }
 
+################################################################################
 
 # Remove human PPI that are physically separated by subcellular location
 e.filter.subcell <- function(graph) {
@@ -49,6 +51,11 @@ e.filter.subcell <- function(graph) {
         lapply(subcell.locations, function(l) {
             v.filter.subcell(graph, l)
         }))
+    edgeDelete <- E(graph)[
+        ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
+        ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
+    ]
+    newg <- newg %u% delete_edges(graph, edgeDelete)
     return(newg)
 }
 
@@ -59,7 +66,7 @@ e.filter.tissue <- function(graph, ntpmCutoff = NULL) {
     if (is.null(ntpmCutoff)) {
         ntpmCutoff <- data.frame(
             tissue = unique(tissue$Tissue),
-            min = rep(0.1, times = length(unique(tissue$Tissue))),
+            min = rep(1, times = length(unique(tissue$Tissue))),
             max = rep(1000000, times = length(unique(tissue$Tissue)))
         )
     }
@@ -68,7 +75,11 @@ e.filter.tissue <- function(graph, ntpmCutoff = NULL) {
         apply(ntpmCutoff, 1, function(x) {
             v.filter.tissue(graph, x[1], x[2], x[3])
         }))
-
+    edgeDelete <- E(graph)[
+        ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
+        ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
+    ]
+    newg <- newg %u% delete_edges(graph, edgeDelete)
     return(newg)
 }
 
@@ -79,7 +90,7 @@ e.filter.type <- function(graph, ntpmCutoff = NULL) {
     if (is.null(ntpmCutoff)) {
         ntpmCutoff <- data.frame(
             cellType = unique(cellType$Cell.type),
-            min = rep(0.1, times = length(unique(cellType$Cell.type))),
+            min = rep(1, times = length(unique(cellType$Cell.type))),
             max = rep(1000000, times = length(unique(cellType$Cell.type)))
         )
     }
@@ -88,7 +99,11 @@ e.filter.type <- function(graph, ntpmCutoff = NULL) {
         apply(ntpmCutoff, 1, function(x) {
             v.filter.type(graph, x[1], x[2], x[3])
         }))
-
+    edgeDelete <- E(graph)[
+        ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
+        ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
+    ]
+    newg <- newg %u% delete_edges(graph, edgeDelete)
     return(newg)
 }
 
@@ -99,7 +114,7 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
     if (is.null(ntpmCutoff)) {
         ntpmCutoff <- data.frame(
             line = unique(cellLine$Cell.line),
-            min = rep(0.1, times = length(unique(cellLine$Cell.line))),
+            min = rep(1, times = length(unique(cellLine$Cell.line))),
             max = rep(1000000, times = length(unique(cellLine$Cell.line)))
         )
     }
@@ -108,17 +123,24 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
         apply(ntpmCutoff, 1, function(x) {
             v.filter.line(graph, x[1], x[2], x[3])
         }))
-
+    edgeDelete <- E(graph)[
+        ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
+        ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
+    ]
+    newg <- newg %u% delete_edges(graph, edgeDelete)
     return(newg)
 }
 
+################################################################################
+
 ### Sanity Checks
-# head(V(g)) # 32946
-# head(E(g)) # 645539
+# g <- readRDS("clean/baseGraph.rds")
+# head(V(g)) # 32902
+# head(E(g)) # 673223
 
 # newg <- e.filter.subcell(g)
-# head(V(newg)) # 24271
-# head(E(newg)) # 440656
+# head(V(newg)) # 32902
+# head(E(newg)) # 454937
 
 # # > 1200 cell lines; Very slow
 # newg <- e.filter.line(g)
@@ -126,9 +148,9 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
 # head(E(newg))
 
 # newg <- e.filter.type(g)
-# head(V(newg)) # 29790
-# head(E(newg)) # 602840
+# head(V(newg))
+# head(E(newg))
 
 # newg <- e.filter.tissue(g)
-# head(V(newg)) # 29606
-# head(E(newg)) # 596438
+# head(V(newg))
+# head(E(newg))
