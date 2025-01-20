@@ -7,19 +7,26 @@ library("igraph")
 library("networkD3")
 
 plotCombination <- function(graph, disease, drugs, additionalNodes = NULL, 
-    diseaseOrder = 1, otherOrder = 1, interactive = TRUE) {
+    diseaseOrder = 1, otherOrder = 1, interactive = TRUE, includeOtherMarkerNodes = FALSE) {
+
+    if (includeOtherMarkerNodes) {
+        mode <- "all"
+    } else {
+        mode <- "out"
+    }
+
     diseaseNodes <- unlist(ego(
         graph, 
         order = diseaseOrder, 
         nodes = disease,
-        mode = "out"
+        mode = mode
     ))
 
     otherNodes <- unlist(ego(
         graph, 
         order = otherOrder, 
         nodes = c(drugs, additionalNodes),
-        mode = "out"
+        mode = mode
     ))
 
     subgraph <- induced_subgraph(graph, c(diseaseNodes, otherNodes))
@@ -51,10 +58,10 @@ getNearbyNodes <- function(graph, order, node) {
 
 
 ### Sanity Check
-chosenDisease <- "ALZHEIMER DISEASE 2"
-g <- readRDS("clean/baseGraph.rds")
-drugDist <- findDrugDist(g, chosenDisease, 1, 1, overlapDist)
-drugPairs <- findDrugPairs(g, drugDist)
-drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
+# chosenDisease <- "ALZHEIMER DISEASE 2"
+# g <- readRDS("clean/baseGraph.rds")
+# drugDist <- findDrugDist(g, chosenDisease, 1, 1, overlapDist)
+# drugPairs <- findDrugPairs(g, drugDist)
+# drugCombs <- findDrugCombinations(g, drugDist, drugPairs, maxSize = 3)
 
-plotCombination(g, chosenDisease, unlist(drugCombs[[3]][[1]]))
+# plotCombination(g, chosenDisease, unlist(drugCombs[[3]][[1]]))
