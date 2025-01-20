@@ -102,15 +102,15 @@ funcDist <- function(graph, nodeset1, nodeset2, out = "min", type = "BP") {
 # representing the number of nodes that can appear between the disease and drugs
 # `diseaseDistShift` is the amount to subtract from drug-disease distances. 
 # This would allow further drugs to be included, which can be finetuned to include drugs that affect proteins in the neighbourhood of the disease.
-findDrugDist <- function(graph, d, minSep = 0, maxSep = 0, distFun = topDist, diseaseDistShift = maxSep) {
-    v <- ego(graph, order = maxSep+2, nodes = d, mode = "all")[[1]]
-    v <- v %m% ego(graph, order = minSep+1, nodes = d, mode = "all")[[1]]
+findDrugDist <- function(graph, disease, minSep = 0, maxSep = 0, distFun = topDist, diseaseDistShift = maxSep) {
+    v <- ego(graph, order = maxSep+2, nodes = disease, mode = "all")[[1]]
+    v <- v %m% ego(graph, order = minSep+1, nodes = disease, mode = "all")[[1]]
 
     drugs <- v[v$type == "drug"]
     drug_names <- names(drugs)
     cat(paste("Found", length(drug_names), "drugs", "\n"))
 
-    diseaseCluster <- neighbors(graph, d, mode = "out")
+    diseaseCluster <- neighbors(graph, disease, mode = "out")
     drugCluster <- lapply(drugs, function(x) neighbors(graph, x, mode = "out"))
 
     cat("Calculating disease-drug distance\n")
