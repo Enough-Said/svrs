@@ -37,7 +37,7 @@ v.filter.tissue <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
     notPPI <- which(V(graph)$name %in% notPPI)
 
     subgraph <- induced_subgraph(graph, vids = c(filteredGenes, notPPI))
-    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph)==0])
+    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph) == 0])
     return(subgraph)
 }
 
@@ -53,7 +53,7 @@ v.filter.type <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
     notPPI <- which(V(graph)$name %in% notPPI)
 
     subgraph <- induced_subgraph(graph, vids = c(filteredGenes, notPPI))
-    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph)==0])
+    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph) == 0])
     return(subgraph)
 }
 
@@ -69,7 +69,7 @@ v.filter.line <- function(graph, cl, minNTPM = 0, maxNTPM = 1000000) {
     notPPI <- which(V(graph)$name %in% notPPI)
 
     subgraph <- induced_subgraph(graph, vids = c(filteredGenes, notPPI))
-    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph)==0])
+    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph) == 0])
     return(subgraph)
 }
 
@@ -87,7 +87,7 @@ v.filter.subcell <- function(graph, l) {
     notPPI <- which(V(graph)$name %in% notPPI)
 
     subgraph <- induced_subgraph(graph, vids = c(filteredGenes, notPPI))
-    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph)==0])
+    subgraph <- delete_vertices(subgraph, V(subgraph)[degree(subgraph) == 0])
     return(subgraph)
 }
 

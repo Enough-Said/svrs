@@ -15,21 +15,21 @@ union2 <- function(g1, g2, ...) {
     #Internal function that cleans the names of a given attribute
     CleanNames <- function(g, target) {
         # Get target names, find names with "_x" and remove
-        gNames <- parse(text = (paste0(target,"_attr_names(g)"))) %>% eval 
-        AttrNeedsCleaning <- grepl("(_\\d)$", gNames )
+        gNames <- parse(text = (paste0(target, "_attr_names(g)"))) %>% eval 
+        AttrNeedsCleaning <- grepl("(_\\d)$", gNames)
         StemName <- gsub("(_\\d)$", "", gNames)
 
         #replace attribute name for all attributes
         NewnNames <- unique(StemName[AttrNeedsCleaning])
         for (i in NewnNames) {
-            attr1 <- parse(text = (paste0(target,"_attr(g,'", paste0(i, "_1"),"')"))) %>% eval
-            attr2 <- parse(text = (paste0(target,"_attr(g,'", paste0(i, "_2"),"')"))) %>% eval
+            attr1 <- parse(text = (paste0(target, "_attr(g,'", paste0(i, "_1"), "')"))) %>% eval
+            attr2 <- parse(text = (paste0(target, "_attr(g,'", paste0(i, "_2"), "')"))) %>% eval
 
-            g <- parse(text = (paste0("set_",target,"_attr(g, i, value = ifelse(is.na(attr1), attr2, attr1))"))) %>%
+            g <- parse(text = (paste0("set_", target, "_attr(g, i, value = ifelse(is.na(attr1), attr2, attr1))"))) %>%
                         eval
 
-            g <- parse(text = (paste0("delete_",target,"_attr(g,'", paste0(i, "_1"),"')"))) %>% eval
-            g <- parse(text = (paste0("delete_",target,"_attr(g,'", paste0(i, "_2"),"')"))) %>% eval
+            g <- parse(text = (paste0("delete_", target, "_attr(g,'", paste0(i, "_1"), "')"))) %>% eval
+            g <- parse(text = (paste0("delete_", target, "_attr(g,'", paste0(i, "_2"), "')"))) %>% eval
         }
         return(g)
     }
