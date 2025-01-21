@@ -49,8 +49,8 @@ knownCombs$overlapDist <- unlist(apply(knownCombs, MARGIN = 1, function(comb) {
 }))
 
 nrow(knownCombs) # 595 drug combinations
-knownCombs %>% filter(overlapDist > 0) %>% nrow() # 505 drug combinations
-knownCombs %>% filter(topDist > 0) %>% nrow() # 186 drug combinations
+knownCombs %>% filter(overlapDist >= 0) %>% nrow() # 505 drug combinations
+knownCombs %>% filter(topDist >= 0) %>% nrow() # 352 drug combinations
 
 
 ### We can now repeat but with filtered edges
@@ -75,5 +75,5 @@ filtered$overlapDist <- unlist(apply(filtered, MARGIN = 1, function(comb) {
 }))
 
 nrow(filtered) # 595 drug combinations
-filtered %>% filter(overlapDist > 0) %>% nrow() # 505 drug combinations
-filtered %>% filter(topDist > 0) %>% nrow() # 52 drug combinations
+filtered %>% filter(overlapDist >= 0) %>% nrow() # 505 drug combinations
+filtered %>% filter(topDist >= 0) %>% nrow() # 462 drug combinations
