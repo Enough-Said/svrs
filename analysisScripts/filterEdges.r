@@ -6,11 +6,12 @@
 source("analysisScripts/filterNodes.r")
 library("dplyr")
 library("igraph")
+library("pbapply")
 
 ### Credit to Jonno Bourne for union function
 # The union of two or more graphs are created. 
 # The graphs may have identical or overlapping vertex sets.
-union2 <- function(g1, g2) {
+union2 <- function(g1, g2, ...) {
     #Internal function that cleans the names of a given attribute
     CleanNames <- function(g, target) {
         # Get target names, find names with "_x" and remove
@@ -33,7 +34,7 @@ union2 <- function(g1, g2) {
         return(g)
     }
 
-    g <- igraph::union(g1, g2) 
+    g <- igraph::union(g1, g2, ...) 
     for (i in c("graph", "edge", "vertex")) {
         g <- CleanNames(g, i)
     }
@@ -47,10 +48,13 @@ union2 <- function(g1, g2) {
 e.filter.subcell <- function(graph) {
     # Create each subgraph and combine them
     subcell.locations <- unique(unlist(subcell$All.location))
-    newg <- Reduce(union2, 
-        lapply(subcell.locations, function(l) {
+
+    newg <- do.call(union2,
+        pblapply(subcell.locations, function(l) {
             v.filter.subcell(graph, l)
-        }))
+        })
+    )
+
     edgeDelete <- E(graph)[
         ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
         ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
@@ -71,10 +75,12 @@ e.filter.tissue <- function(graph, ntpmCutoff = NULL) {
         )
     }
 
-    newg <- Reduce(union2, 
-        apply(ntpmCutoff, 1, function(x) {
+    newg <- do.call(union2, 
+        pbapply(ntpmCutoff, 1, function(x) {
             v.filter.tissue(graph, x[1], x[2], x[3])
-        }))
+        })
+    )
+    
     edgeDelete <- E(graph)[
         ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
         ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
@@ -95,10 +101,12 @@ e.filter.type <- function(graph, ntpmCutoff = NULL) {
         )
     }
 
-    newg <- Reduce(union2, 
-        apply(ntpmCutoff, 1, function(x) {
+    newg <- do.call(union2, 
+        pbapply(ntpmCutoff, 1, function(x) {
             v.filter.type(graph, x[1], x[2], x[3])
-        }))
+        })
+    )
+
     edgeDelete <- E(graph)[
         ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
         ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
@@ -108,7 +116,7 @@ e.filter.type <- function(graph, ntpmCutoff = NULL) {
 }
 
 # Only keep human PPI if both proteins are expressed in a cell line above a threshold
-# Requires an igraph object and a dataframe with three columns: 
+# Requires an igraph object and optionally a dataframe with three columns: 
 # Cell line, minimum nTPM and maximum nTPM
 e.filter.line <- function(graph, ntpmCutoff = NULL) {
     if (is.null(ntpmCutoff)) {
@@ -119,10 +127,12 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
         )
     }
 
-    newg <- Reduce(union2, 
-        apply(ntpmCutoff, 1, function(x) {
+    newg <- do.call(union2, 
+        pbapply(ntpmCutoff, 1, function(x) {
             v.filter.line(graph, x[1], x[2], x[3])
-        }))
+        })
+    )
+
     edgeDelete <- E(graph)[
         ends(graph, E(graph))[, 1] %in% V(graph)[V(graph)$type == "human-protein"]$name &
         ends(graph, E(graph))[, 2] %in% V(graph)[V(graph)$type == "human-protein"]$name
@@ -140,7 +150,7 @@ e.filter.line <- function(graph, ntpmCutoff = NULL) {
 
 # newg <- e.filter.subcell(g)
 # head(V(newg)) # 32902
-# head(E(newg)) # 454937
+# head(E(newg)) # 646329
 
 # # > 1200 cell lines; Very slow
 # newg <- e.filter.line(g)
