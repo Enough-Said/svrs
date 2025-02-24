@@ -30,7 +30,7 @@ tpmFilter <- function(df, minNTPM, maxNTPM, vInG) {
 # for the tissue, as well as non-human-protein nodes. 
 #
 # nTPM = Normalised Transcripts per Million
-v.filter.tissue <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
+v.filter.tissue <- function(graph, t, minNTPM = 1, maxNTPM = 1000000) {
     filteredGenes <- tpmFilter(tissue[tissue$Tissue == t, ], minNTPM, maxNTPM, 
                                V(graph))
     notPPI <- V(graph)$name[V(graph)$type != "human-protein"]
@@ -46,7 +46,7 @@ v.filter.tissue <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
 # for the cell type, as well as non-human-protein nodes. 
 #
 # nTPM = Normalised Transcripts per Million
-v.filter.type <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
+v.filter.type <- function(graph, t, minNTPM = 1, maxNTPM = 1000000) {
     filteredGenes <- tpmFilter(cellType[cellType$Cell.type == t, ], minNTPM, 
                                maxNTPM, V(graph))
     notPPI <- V(graph)$name[V(graph)$type != "human-protein"]
@@ -62,7 +62,7 @@ v.filter.type <- function(graph, t, minNTPM = 0, maxNTPM = 1000000) {
 # for the cell line, as well as non-human-protein nodes. 
 #
 # nTPM = Normalised Transcripts per Million
-v.filter.line <- function(graph, cl, minNTPM = 0, maxNTPM = 1000000) {
+v.filter.line <- function(graph, cl, minNTPM = 1, maxNTPM = 1000000) {
     filteredGenes <- tpmFilter(cellLine[cellLine$Cell.line == cl, ], minNTPM, 
                                maxNTPM, V(graph))
     notPPI <- V(graph)$name[V(graph)$type != "human-protein"]

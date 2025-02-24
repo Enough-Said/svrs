@@ -51,14 +51,9 @@ overlapDist <- function(graph, nodeset1, nodeset2) {
 
 # Function to find functional proximity between two sets of nodes
 # Ensure go data is preprocessed for function to work (should occur when you run this script)
-# `out` can be "all", "max", "min", or "mean"; `out` is ignored if `type` is "all"
+# `out` can be "all", "max", "min", or "mean"; `out` is ignored if `type` is not "all"
 # `type` can be "CC" (Cellular Component), "MF" (Molecular Function), "BP" (Biological Process), or "all"
 funcDist <- function(graph, nodeset1, nodeset2, out = "min", type = "BP") {
-    if (!(out %in% c("all", "max", "min", "mean"))) {
-        print(paste("Invalid value for out: ", out))
-        return()
-    }
-
     set1 <- select(org.Hs.eg.db,
         keys = names(nodeset1),
         columns = "ENTREZID",
@@ -81,6 +76,9 @@ funcDist <- function(graph, nodeset1, nodeset2, out = "min", type = "BP") {
     } else if (type == "BP") {
         simBP <- 1 - mgeneSim(c(set1, set2), goDataBP, verbose = FALSE)[set1, set2]
         return(mean(simBP))
+    } else {
+        print(paste("Invalid value for type: ", type))
+        return()
     }
 
     res <- c(mean(simCC), mean(simMF), mean(simBP))
@@ -92,16 +90,20 @@ funcDist <- function(graph, nodeset1, nodeset2, out = "min", type = "BP") {
         return(max(res))
     } else if (out == "min") {
         return(min(res))
+    } else {
+        print(paste("Invalid value for out: ", out))
+        return()
     }
 }
 
 ################################################################################
 
-# Given a graph and disease name, finds nearby drugs and returns their topological distance values
+# Given a graph and disease name, finds nearby drugs and returns their distance values
 # `minSep` and `maxSep` are the minimum and maximum separation, 
 # representing the number of nodes that can appear between the disease and drugs
 # `diseaseDistShift` is the amount to subtract from drug-disease distances. 
-# This would allow further drugs to be included, which can be finetuned to include drugs that affect proteins in the neighbourhood of the disease.
+# This would allow further drugs to be included, which can be finetuned to include 
+# drugs that affect proteins in the neighbourhood of the disease.
 findDrugDist <- function(graph, disease, minSep = 0, maxSep = 0, distFun = topDist, diseaseDistShift = maxSep) {
     v <- ego(graph, order = maxSep+2, nodes = disease, mode = "all")[[1]]
     v <- v %m% ego(graph, order = minSep+1, nodes = disease, mode = "all")[[1]]
